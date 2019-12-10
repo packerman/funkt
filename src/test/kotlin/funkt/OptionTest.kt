@@ -28,4 +28,20 @@ internal class OptionTest {
         assertEquals(Option(9), Option(3).map { it * it })
         assertEquals(Option<Int>(), Option<Int>().map { it * it })
     }
+
+    @Test
+    internal fun flatMapOptions() {
+        assertEquals(Option<Int>(), Option<Int>().flatMap { Option(it * it) })
+        assertEquals(Option(9), Option(3).flatMap { Option(it * it) })
+        assertEquals(Option<Int>(), Option(3).flatMap { Option<Int>() })
+    }
+
+    @Test
+    internal fun callForEach() {
+        var callCount = 0
+        Option<Int>().forEach { callCount += 1 }
+        assertEquals(0, callCount)
+        Option(3).forEach { callCount += 1 }
+        assertEquals(1, callCount)
+    }
 }
