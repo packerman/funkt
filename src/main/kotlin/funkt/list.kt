@@ -24,7 +24,7 @@ sealed class List<out A> {
     companion object {
 
         operator fun <A> invoke(vararg elements: A): List<A> =
-            elements.foldRight(Nil as List<A>) { e, l -> Cons(e, l) }
+            elements.foldRight(Nil) { e: A, l: List<A> -> Cons(e, l) }
     }
 }
 

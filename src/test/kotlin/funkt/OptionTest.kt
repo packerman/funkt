@@ -28,4 +28,11 @@ internal class OptionTest {
         assertEquals(Option(9), Option(3).map { it * it })
         assertEquals(Option<Int>(), Option<Int>().map { it * it })
     }
+
+    @Test
+    internal fun flatMapOptions() {
+        assertEquals(Option<Int>(), Option<Int>().flatMap { Option(it * it) })
+        assertEquals(Option(9), Option(3).flatMap { Option(it * it) })
+        assertEquals(Option<Int>(), Option(3).flatMap { Option<Int>() })
+    }
 }
