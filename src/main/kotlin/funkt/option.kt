@@ -21,6 +21,10 @@ sealed class Option<out A> {
 
     fun <B> flatMap(f: (A) -> Option<B>): Option<B> = map(f).getOrElse(None)
 
+    fun forEach(action: (A) -> Unit) {
+        if (this is Some) action(value)
+    }
+
     internal object None : Option<Nothing>() {
 
         override fun isEmpty(): Boolean = true
