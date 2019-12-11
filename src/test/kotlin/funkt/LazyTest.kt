@@ -18,4 +18,16 @@ internal class LazyTest {
         assertEquals(1, lazyValue())
         assertEquals(1, callCount)
     }
+
+    @Test
+    internal fun mapLazyValues() {
+        var callCount = 0
+        val lazyValue = Lazy { 3 }.map {
+            callCount += 1
+            it * it
+        }
+        assertEquals(0, callCount)
+        assertEquals(9, lazyValue())
+        assertEquals(1, callCount)
+    }
 }

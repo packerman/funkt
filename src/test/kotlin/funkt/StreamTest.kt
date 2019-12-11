@@ -1,13 +1,21 @@
 package funkt
 
+import funkt.Stream.Companion.concat
 import funkt.Stream.Companion.cons
 import funkt.Stream.Companion.drop
 import funkt.Stream.Companion.iterate
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.fail
+import funkt.Stream.Companion.repeat
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class StreamTest {
+
+    @Test
+    internal fun createStreams() {
+        assertTrue(Stream<Int>().isEmpty())
+        assertFalse(Stream(1, 2, 3).isEmpty())
+        assertEquals(listOf(1, 2, 3), Stream(1, 2, 3).asIterable().toList())
+    }
 
     @Test
     internal fun generateStreamByIteration() {
@@ -31,12 +39,12 @@ internal class StreamTest {
     internal fun dropStream() {
         val s = iterate(0) { it + 1 }
 
-        s.drop(1000000).unCons().map { (h, _) ->
-            assertEquals(1000000, h)
+        s.drop(100000).unCons().map { (h, _) ->
+            assertEquals(100000, h)
         }.getOrElse { fail("Not enough elements in stream") }
 
-        drop(s, 1000000).unCons().map { (h, _) ->
-            assertEquals(1000000, h)
+        drop(s, 100000).unCons().map { (h, _) ->
+            assertEquals(100000, h)
         }.getOrElse { fail("Not enough elements in stream") }
     }
 
@@ -65,5 +73,50 @@ internal class StreamTest {
             }
         }
         assertEquals(listOf(1, 1, 2, 3, 5, 8, 13, 21, 34, 55), fib().take(10).asIterable().toList())
+    }
+
+    @Test
+    internal fun createStreamByRepeating() {
+        assertEquals(listOf(2, 2, 2, 2, 2, 2), repeat(2).take(6).asIterable().toList())
+    }
+
+    @Test
+    internal fun concatStreams() {
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6), Stream(1, 2, 3).concat(Stream(4, 5, 6))
+                .asIterable().toList()
+        )
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6), concat(Stream(1, 2, 3), Stream(4, 5, 6))
+                .asIterable().toList()
+        )
+
+        assertEquals(
+            listOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2),
+            repeat(1).take(100000).concat(repeat(2).take(100000)).drop(99995).take(10)
+                .asIterable().toList()
+        )
+    }
+
+    @Test
+    internal fun mapValues() {
+        assertEquals(listOf(1, 4, 9, 16, 25, 36, 49, 64, 81),
+            iterate(1) { it + 1 }.map { it * it }
+                .take(9).asIterable().toList())
+    }
+
+    @Test
+    internal fun flatMapStreams() {
+        assertEquals(listOf(1, 2, 2, 3, 3, 3), Stream(1, 2, 3).flatMap { repeat(it).take(it) }.asIterable().toList())
+
+        assertEquals(listOf(1, 2, 2, 3, 3, 3, 4, 4, 4, 4),
+            iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(10)
+                .asIterable().toList()
+        )
+
+        assertEquals(listOf(447, 447, 447, 447, 447, 447, 447, 447, 447, 447),
+            iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(100000).drop(99990)
+                .asIterable().toList()
+        )
     }
 }
