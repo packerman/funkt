@@ -1,13 +1,21 @@
 package funkt
 
+import funkt.Stream.Companion.concat
 import funkt.Stream.Companion.cons
 import funkt.Stream.Companion.drop
 import funkt.Stream.Companion.iterate
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.fail
+import funkt.Stream.Companion.repeat
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class StreamTest {
+
+    @Test
+    internal fun createStreams() {
+        assertTrue(Stream<Int>().isEmpty())
+        assertFalse(Stream(1, 2, 3).isEmpty())
+        assertEquals(listOf(1, 2, 3), Stream(1, 2, 3).asIterable().toList())
+    }
 
     @Test
     internal fun generateStreamByIteration() {
@@ -65,5 +73,28 @@ internal class StreamTest {
             }
         }
         assertEquals(listOf(1, 1, 2, 3, 5, 8, 13, 21, 34, 55), fib().take(10).asIterable().toList())
+    }
+
+    @Test
+    internal fun createStreamByRepeating() {
+        assertEquals(listOf(2, 2, 2, 2, 2, 2), repeat(2).take(6).asIterable().toList())
+    }
+
+    @Test
+    internal fun concatStreams() {
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6), Stream(1, 2, 3).concat(Stream(4, 5, 6))
+                .asIterable().toList()
+        )
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6), concat(Stream(1, 2, 3), Stream(4, 5, 6))
+                .asIterable().toList()
+        )
+
+        assertEquals(
+            listOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2),
+            repeat(1).take(1000000).concat(repeat(2).take(1000000)).drop(999995).take(10)
+                .asIterable().toList()
+        )
     }
 }
