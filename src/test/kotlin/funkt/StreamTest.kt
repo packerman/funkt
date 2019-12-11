@@ -39,12 +39,12 @@ internal class StreamTest {
     internal fun dropStream() {
         val s = iterate(0) { it + 1 }
 
-        s.drop(1000000).unCons().map { (h, _) ->
-            assertEquals(1000000, h)
+        s.drop(100000).unCons().map { (h, _) ->
+            assertEquals(100000, h)
         }.getOrElse { fail("Not enough elements in stream") }
 
-        drop(s, 1000000).unCons().map { (h, _) ->
-            assertEquals(1000000, h)
+        drop(s, 100000).unCons().map { (h, _) ->
+            assertEquals(100000, h)
         }.getOrElse { fail("Not enough elements in stream") }
     }
 
@@ -93,8 +93,21 @@ internal class StreamTest {
 
         assertEquals(
             listOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2),
-            repeat(1).take(1000000).concat(repeat(2).take(1000000)).drop(999995).take(10)
+            repeat(1).take(100000).concat(repeat(2).take(100000)).drop(99995).take(10)
                 .asIterable().toList()
+        )
+    }
+
+    @Test
+    internal fun flatMapStreams() {
+        assertEquals(listOf(1, 2, 2, 3, 3, 3), Stream(1, 2, 3).flatMap { repeat(it).take(it) }.asIterable().toList())
+
+        assertEquals(listOf(1, 2, 2, 3, 3, 3, 4, 4, 4, 4), iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(10)
+            .asIterable().toList()
+        )
+
+        assertEquals(listOf(447, 447, 447, 447, 447, 447, 447, 447, 447, 447), iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(100000).drop(99990)
+            .asIterable().toList()
         )
     }
 }

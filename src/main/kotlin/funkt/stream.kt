@@ -19,6 +19,9 @@ sealed class Stream<out A> {
 
     fun concat(other: Stream<@UnsafeVariance A>): Stream<A> = concat(this, other)
 
+    fun <B> flatMap(f: (A) -> Stream<B>): Stream<B> =
+        unCons().map { (h, t) -> concatLazy(f(h), Lazy { t().flatMap(f) }) }.getOrElse(Empty)
+
     fun <B, C> zip(other: Stream<B>, f: (A, B) -> C): Stream<C> = when (this) {
         is Empty -> Empty
         is Cons -> when (other) {
@@ -59,6 +62,9 @@ sealed class Stream<out A> {
 
         fun <A> concat(stream1: Stream<A>, stream2: Stream<A>): Stream<A> =
             stream1.unCons().map { (h, t) -> cons(h, { concat(t(), stream2) }) }.getOrElse(stream2)
+
+        fun <A> concatLazy(stream1: Stream<A>, stream2: Lazy<Stream<A>>): Stream<A> =
+            stream1.unCons().map { (h, t) -> cons(h, { concatLazy(t(), stream2) }) }.getOrElse(stream2)
 
         internal class StreamIterator<A>(private var stream: Stream<A>) : Iterator<A> {
 
