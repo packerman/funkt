@@ -70,13 +70,6 @@ sealed class Stream<out A> {
         fun <A> concat(stream1: Stream<A>, stream2: Stream<A>): Stream<A> =
             stream1.unCons().map { (h, t) -> cons(h, { concat(t(), stream2) }) }.getOrElse(stream2)
 
-        fun <A> concatStreams(streams: Stream<Stream<A>>): Stream<A> =
-            streams.unCons().map { (hs: Stream<A>, ts: Lazy<Stream<Stream<A>>>) ->
-                hs.unCons().map { (h: A, t: Lazy<Stream<A>>) ->
-                    cons(h, { concatStreams(cons(t(), ts)) })
-                }.getOrElse(ts.map { concatStreams(it) })
-            }.getOrElse(Empty)
-
         private fun <A> concatLazy(stream1: Stream<A>, stream2: Lazy<Stream<A>>): Stream<A> =
             stream1.unCons().map { (h, t) -> cons(h, { concatLazy(t(), stream2) }) }.getOrElse(stream2)
 

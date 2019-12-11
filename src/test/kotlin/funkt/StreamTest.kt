@@ -106,32 +106,6 @@ internal class StreamTest {
     }
 
     @Test
-    internal fun concatManyStreams() {
-        assertTrue(Stream.concatStreams(Stream<Stream<Any>>()).isEmpty())
-        assertEquals(listOf(1, 2, 3), Stream.concatStreams(Stream(Stream(1, 2, 3))).asIterable().toList())
-        assertEquals(
-            listOf(1, 2, 3, 4, 5, 6),
-            Stream.concatStreams(Stream(Stream(1, 2, 3), Stream(4, 5, 6))).asIterable().toList()
-        )
-        assertEquals(
-            listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
-            Stream.concatStreams(
-                Stream(
-                    Stream(1, 2, 3),
-                    Stream(4, 5, 6),
-                    Stream(7, 8, 9)
-                )
-            )
-                .asIterable().toList()
-        )
-        assertEquals(
-            listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
-            Stream.concatStreams(iterate(1) { it + 1 }.map { Stream(it) })
-                .take(9).asIterable().toList()
-        )
-    }
-
-    @Test
     internal fun flatMapStreams() {
         assertEquals(listOf(1, 2, 2, 3, 3, 3), Stream(1, 2, 3).flatMap { repeat(it).take(it) }.asIterable().toList())
 
