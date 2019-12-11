@@ -99,15 +99,50 @@ internal class StreamTest {
     }
 
     @Test
+    internal fun mapValues() {
+        assertEquals(listOf(1, 4, 9, 16, 25, 36, 49, 64, 81),
+            iterate(1) { it + 1 }.map { it * it }
+                .take(9).asIterable().toList())
+    }
+
+    @Test
+    internal fun concatManyStreams() {
+        assertTrue(Stream.concatStreams(Stream<Stream<Any>>()).isEmpty())
+        assertEquals(listOf(1, 2, 3), Stream.concatStreams(Stream(Stream(1, 2, 3))).asIterable().toList())
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6),
+            Stream.concatStreams(Stream(Stream(1, 2, 3), Stream(4, 5, 6))).asIterable().toList()
+        )
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
+            Stream.concatStreams(
+                Stream(
+                    Stream(1, 2, 3),
+                    Stream(4, 5, 6),
+                    Stream(7, 8, 9)
+                )
+            )
+                .asIterable().toList()
+        )
+        assertEquals(
+            listOf(1, 2, 3, 4, 5, 6, 7, 8, 9),
+            Stream.concatStreams(iterate(1) { it + 1 }.map { Stream(it) })
+                .take(9).asIterable().toList()
+        )
+    }
+
+    @Test
     internal fun flatMapStreams() {
         assertEquals(listOf(1, 2, 2, 3, 3, 3), Stream(1, 2, 3).flatMap { repeat(it).take(it) }.asIterable().toList())
 
-        assertEquals(listOf(1, 2, 2, 3, 3, 3, 4, 4, 4, 4), iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(10)
-            .asIterable().toList()
+        assertEquals(listOf(1, 2, 2, 3, 3, 3, 4, 4, 4, 4),
+            iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(10)
+                .asIterable().toList()
         )
 
-        assertEquals(listOf(447, 447, 447, 447, 447, 447, 447, 447, 447, 447), iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(100000).drop(99990)
-            .asIterable().toList()
+        assertEquals(listOf(447, 447, 447, 447, 447, 447, 447, 447, 447, 447),
+            iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(100000).drop(99990)
+                .asIterable().toList()
         )
     }
 }

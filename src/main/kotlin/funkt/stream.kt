@@ -19,6 +19,11 @@ sealed class Stream<out A> {
 
     fun concat(other: Stream<@UnsafeVariance A>): Stream<A> = concat(this, other)
 
+    fun <B> map(f: (A) -> B): Stream<B> =
+        unCons().map { (h, t) ->
+            cons(f(h), t.map { it.map(f) })
+        }.getOrElse(Empty)
+
     fun <B> flatMap(f: (A) -> Stream<B>): Stream<B> =
         unCons().map { (h, t) -> concatLazy(f(h), Lazy { t().flatMap(f) }) }.getOrElse(Empty)
 
@@ -50,6 +55,8 @@ sealed class Stream<out A> {
 
         fun <A> cons(head: A, tail: () -> Stream<A>): Stream<A> = Cons(head, Lazy(tail))
 
+        fun <A> cons(head: A, tail: Lazy<Stream<A>>): Stream<A> = Cons(head, tail)
+
         fun <A> iterate(a: A, f: (A) -> A): Stream<A> = Cons(a, Lazy { iterate(f(a), f) })
 
         fun <A> repeat(a: A): Stream<A> = Cons(a, Lazy { repeat(a) })
@@ -63,10 +70,17 @@ sealed class Stream<out A> {
         fun <A> concat(stream1: Stream<A>, stream2: Stream<A>): Stream<A> =
             stream1.unCons().map { (h, t) -> cons(h, { concat(t(), stream2) }) }.getOrElse(stream2)
 
-        internal fun <A> concatLazy(stream1: Stream<A>, stream2: Lazy<Stream<A>>): Stream<A> =
+        fun <A> concatStreams(streams: Stream<Stream<A>>): Stream<A> =
+            streams.unCons().map { (hs: Stream<A>, ts: Lazy<Stream<Stream<A>>>) ->
+                hs.unCons().map { (h: A, t: Lazy<Stream<A>>) ->
+                    cons(h, { concatStreams(cons(t(), ts)) })
+                }.getOrElse(ts.map { concatStreams(it) })
+            }.getOrElse(Empty)
+
+        private fun <A> concatLazy(stream1: Stream<A>, stream2: Lazy<Stream<A>>): Stream<A> =
             stream1.unCons().map { (h, t) -> cons(h, { concatLazy(t(), stream2) }) }.getOrElse(stream2)
 
-        internal class StreamIterator<A>(private var stream: Stream<A>) : Iterator<A> {
+        private class StreamIterator<A>(private var stream: Stream<A>) : Iterator<A> {
 
             override fun hasNext(): Boolean {
                 return stream !is Empty
