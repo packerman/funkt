@@ -12,12 +12,14 @@ sealed class Stream<out A> {
     fun take(n: Int): Stream<A> =
         if (n <= 0) Empty else when (this) {
             is Empty -> Empty
-            is Cons -> Cons(head, Lazy { tail().take(n - 1) })
+            is Cons -> Cons(head, tail.map { it.take(n - 1) })
         }
 
     fun drop(n: Int): Stream<A> = drop(this, n)
 
     fun concat(other: Stream<@UnsafeVariance A>): Stream<A> = concat(this, other)
+
+    fun interleave(other: Stream<@UnsafeVariance A>): Stream<A> = interleave(this, other)
 
     fun <B> map(f: (A) -> B): Stream<B> =
         unCons().map { (h, t) ->
@@ -25,13 +27,13 @@ sealed class Stream<out A> {
         }.getOrElse(Empty)
 
     fun <B> flatMap(f: (A) -> Stream<B>): Stream<B> =
-        unCons().map { (h, t) -> concatLazy(f(h), Lazy { t().flatMap(f) }) }.getOrElse(Empty)
+        unCons().map { (h, t) -> concatLazy(f(h), t.map { it.flatMap(f) }) }.getOrElse(Empty)
 
     fun <B, C> zip(other: Stream<B>, f: (A, B) -> C): Stream<C> = when (this) {
         is Empty -> Empty
         is Cons -> when (other) {
             is Empty -> Empty
-            is Cons -> Cons(f(head, other.head), Lazy { tail().zip(other.tail(), f) })
+            is Cons -> Cons(f(head, other.head), tail.map { it.zip(other.tail(), f) })
         }
     }
 
@@ -68,20 +70,22 @@ sealed class Stream<out A> {
             }
 
         fun <A> concat(stream1: Stream<A>, stream2: Stream<A>): Stream<A> =
-            stream1.unCons().map { (h, t) -> cons(h, { concat(t(), stream2) }) }.getOrElse(stream2)
+            stream1.unCons().map { (h, t) -> cons(h, t.map { concat(it, stream2) }) }.getOrElse(stream2)
+
+        fun <A> interleave(stream1: Stream<A>, stream2: Stream<A>): Stream<A> =
+            stream1.unCons().map { (head1, tail1) ->
+                cons(head1, tail1.map { interleave(stream2, it) })
+            }.getOrElse(stream2)
 
         private fun <A> concatLazy(stream1: Stream<A>, stream2: Lazy<Stream<A>>): Stream<A> =
-            stream1.unCons().map { (h, t) -> cons(h, { concatLazy(t(), stream2) }) }.getOrElse(stream2)
+            stream1.unCons().map { (h, t) -> cons(h, t.map { concatLazy(it, stream2) }) }.getOrElse(stream2)
 
         private class StreamIterator<A>(private var stream: Stream<A>) : Iterator<A> {
 
-            override fun hasNext(): Boolean {
-                return stream !is Empty
-            }
+            override fun hasNext(): Boolean = stream !is Empty
 
-            override fun next(): A {
-                val s = stream
-                return when (s) {
+            override fun next(): A = stream.let { s ->
+                when (s) {
                     is Empty -> error("Empty stream")
                     is Cons -> s.head.also {
                         stream = s.tail()
