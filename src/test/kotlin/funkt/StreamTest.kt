@@ -3,6 +3,7 @@ package funkt
 import funkt.Stream.Companion.concat
 import funkt.Stream.Companion.cons
 import funkt.Stream.Companion.drop
+import funkt.Stream.Companion.interleave
 import funkt.Stream.Companion.iterate
 import funkt.Stream.Companion.repeat
 import org.junit.jupiter.api.Assertions.*
@@ -103,6 +104,11 @@ internal class StreamTest {
         assertEquals(listOf(1, 4, 9, 16, 25, 36, 49, 64, 81),
             iterate(1) { it + 1 }.map { it * it }
                 .take(9).asIterable().toList())
+
+        assertEquals(listOf(9999400009, 9999600004, 9999800001, 10000000000),
+            iterate(1L) { it + 1 }.map { it * it }
+                .take(100000).drop(99996)
+                .asIterable().toList())
     }
 
     @Test
@@ -118,5 +124,25 @@ internal class StreamTest {
             iterate(1) { it + 1 }.flatMap { repeat(it).take(it) }.take(100000).drop(99990)
                 .asIterable().toList()
         )
+    }
+
+    @Test
+    internal fun interleaveStreams() {
+        assertEquals(
+            listOf(1, 2, 1, 2, 1, 2, 1, 2, 1, 2),
+            interleave(Stream(1, 1, 1, 1, 1), Stream(2, 2, 2, 2, 2))
+                .asIterable().toList()
+        )
+
+        assertEquals(
+            listOf(1, 2, 1, 2, 1, 2, 1, 2, 1, 2),
+            Stream(1, 1, 1, 1, 1).interleave(Stream(2, 2, 2, 2, 2))
+                .asIterable().toList()
+        )
+
+        assertEquals(listOf(1, 2, 1, 2, 1, 2, 1, 2, 1, 2),
+            interleave(repeat(1), repeat(2))
+                .take(100000).drop(99990)
+                .asIterable().toList())
     }
 }
