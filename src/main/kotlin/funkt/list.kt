@@ -16,7 +16,7 @@ sealed class List<out A> {
         override fun isEmpty(): Boolean = true
     }
 
-    internal class Cons<A>(val head: A, val tail: List<A>) : List<A>() {
+    internal data class Cons<A>(val head: A, val tail: List<A>) : List<A>() {
 
         override fun isEmpty(): Boolean = false
     }
