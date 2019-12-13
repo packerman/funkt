@@ -30,11 +30,17 @@ sealed class Option<out A> {
     internal object None : Option<Nothing>() {
 
         override fun isEmpty(): Boolean = true
+
+        override fun toString(): String = "None"
     }
 
     internal data class Some<A>(val value: A) : Option<A>() {
 
         override fun isEmpty(): Boolean = false
+
+        override fun toString(): String {
+            return "Some($value)"
+        }
     }
 
     companion object {
