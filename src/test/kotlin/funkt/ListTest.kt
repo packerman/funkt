@@ -33,4 +33,17 @@ internal class ListTest {
         assertEquals(Option<Int>(), List("a" to 1).lookup("b"))
         assertEquals(Option(2), List("a" to 1).assoc("b", 2).lookup("b"))
     }
+
+    @Test
+    internal fun testIterateList() {
+        assertEquals(listOf<Any>(), List<Any>().toList())
+        assertEquals(listOf(1, 2, 3), List(1, 2, 3).toList())
+    }
+
+    @Test
+    internal fun testToString() {
+        assertEquals("[]", List<Int>().toString())
+        assertEquals("[1]", List(1).toString())
+        assertEquals("[1, 2]", List(1, 2).toString())
+    }
 }

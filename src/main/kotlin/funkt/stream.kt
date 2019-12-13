@@ -87,8 +87,9 @@ sealed class Stream<out A> {
             override fun next(): A = stream.let { s ->
                 when (s) {
                     is Empty -> error("Empty stream")
-                    is Cons -> s.head.also {
+                    is Cons -> {
                         stream = s.tail()
+                        s.head
                     }
                 }
             }
