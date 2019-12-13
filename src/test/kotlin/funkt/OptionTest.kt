@@ -54,4 +54,10 @@ internal class OptionTest {
         Option(3).forEach { callCount += 1 }
         assertEquals(1, callCount)
     }
+
+    @Test
+    internal fun optionToStream() {
+        assertEquals(Stream<Nothing>(), Option<Nothing>().toStream())
+        assertEquals(Stream(5), Option(5).toStream())
+    }
 }
