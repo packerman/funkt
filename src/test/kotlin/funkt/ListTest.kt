@@ -24,11 +24,6 @@ internal class ListTest {
     }
 
     @Test
-    internal fun createAssocList() {
-        assertTrue(emptyAssoc<String, Int>().isEmpty())
-    }
-
-    @Test
     internal fun assocValues() {
         assertEquals(Option<Int>(), List("a" to 1).lookup("b"))
         assertEquals(Option(2), List("a" to 1).assoc("b", 2).lookup("b"))
