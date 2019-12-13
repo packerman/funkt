@@ -1,5 +1,6 @@
 package funkt
 
+import funkt.Option.Companion.some
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -10,6 +11,7 @@ internal class OptionTest {
         assertTrue(Option<Any>().isEmpty())
         assertTrue(Option(null).isEmpty())
         assertFalse(Option(5).isEmpty())
+        assertEquals(Option(5), some(5))
     }
 
     @Test

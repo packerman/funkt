@@ -45,5 +45,7 @@ sealed class Option<out A> {
         }
 
         operator fun <A> invoke(): Option<A> = None
+
+        fun <A> some(a: A): Option<A> = Some(a)
     }
 }
