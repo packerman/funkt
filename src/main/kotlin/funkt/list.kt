@@ -35,5 +35,3 @@ fun <A, B> Assoc<A, B>.assoc(a: A, b: B): Assoc<A, B> = cons(a to b)
 fun <A, B> Assoc<A, B>.lookup(a: A): Option<B> = find { it.first == a }.map { it.second }
 
 fun <A, B> emptyAssoc(): Assoc<A, B> = List()
-
-fun <A, B> assocPairs(vararg pairs: Pair<A, B>): Assoc<A, B> = List(*pairs)
