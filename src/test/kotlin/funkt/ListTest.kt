@@ -32,5 +32,6 @@ internal class ListTest {
     internal fun assocValues() {
         assertEquals(Option<Int>(), List("a" to 1).lookup("b"))
         assertEquals(Option(2), List("a" to 1).assoc("b", 2).lookup("b"))
+        assertEquals(Option(2), assocPairs("a" to 1, "b" to 2).lookup("b"))
     }
 }
