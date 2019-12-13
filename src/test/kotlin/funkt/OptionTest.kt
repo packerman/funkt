@@ -19,6 +19,14 @@ internal class OptionTest {
     }
 
     @Test
+    internal fun testOrElse() {
+        assertEquals(Option<Any>(), Option<Any>().orElse { Option() })
+        assertEquals(Option(5), Option(5).orElse { Option(1) })
+        assertEquals(Option(5), Option(5).orElse { Option() })
+        assertEquals(Option(5), Option<Int>().orElse { Option(5) })
+    }
+
+    @Test
     internal fun getValueFromOptionLazily() {
         assertEquals(5, Option(5).getOrElse { throw RuntimeException() })
     }
