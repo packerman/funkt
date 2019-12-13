@@ -38,9 +38,7 @@ sealed class Option<out A> {
 
         override fun isEmpty(): Boolean = false
 
-        override fun toString(): String {
-            return "Some($value)"
-        }
+        override fun toString(): String = "Some($value)"
     }
 
     companion object {
