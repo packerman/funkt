@@ -26,6 +26,12 @@ sealed class Stream<out A> {
             cons(f(h), t.map { it.map(f) })
         }.getOrElse(Empty)
 
+    fun filter(p: (A) -> Boolean): Stream<A> =
+        unCons().map { (h, t) ->
+            if (p(h)) cons(h, t.map { it.filter(p) })
+            else t().filter(p)
+        }.getOrElse(Empty)
+
     fun <B> flatMap(f: (A) -> Stream<B>): Stream<B> =
         unCons().map { (h, t) -> concatLazy(f(h), t.map { it.flatMap(f) }) }.getOrElse(Empty)
 

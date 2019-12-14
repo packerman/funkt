@@ -58,6 +58,6 @@ internal class OptionTest {
     @Test
     internal fun optionToStream() {
         assertEquals(Stream<Nothing>(), Option<Nothing>().toStream())
-        assertEquals(Stream(5), Option(5).toStream())
+        assertEquals(listOf(5), Option(5).toStream().asIterable().toList())
     }
 }
