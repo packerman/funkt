@@ -42,7 +42,7 @@ sealed class List<out A> : Iterable<A> {
 
         override fun isEmpty(): Boolean = false
 
-        override val length: Int = 1 + tail.length
+        override val length: Int = tail.length + 1
 
         override fun toString(): String = super.toString()
     }
