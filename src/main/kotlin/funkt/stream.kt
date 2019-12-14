@@ -59,6 +59,10 @@ sealed class Stream<out A> {
 
     companion object {
 
+        operator fun <A> invoke(): Stream<A> = Empty
+
+        operator fun <A> invoke(a: A): Stream<A> = Cons(a, Lazy { Empty })
+
         operator fun <A> invoke(vararg elements: A): Stream<A> = elements.toStream(0, elements.size)
 
         fun <A> cons(head: A, tail: () -> Stream<A>): Stream<A> = Cons(head, Lazy(tail))

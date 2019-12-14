@@ -41,4 +41,12 @@ internal class ListTest {
         assertEquals("[1]", List(1).toString())
         assertEquals("[1, 2]", List(1, 2).toString())
     }
+
+    @Test
+    internal fun listToStream() {
+        assertEquals(
+            listOf(1, 2, 3), List(1, 2, 3).toStream()
+                .asIterable().toList()
+        )
+    }
 }

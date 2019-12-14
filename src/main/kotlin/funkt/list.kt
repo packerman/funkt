@@ -11,6 +11,11 @@ sealed class List<out A> : Iterable<A> {
 
     fun cons(a: @UnsafeVariance A): List<A> = Cons(a, this)
 
+    fun unCons(): Option<Pair<A, List<A>>> = when (this) {
+        is Nil -> Option()
+        is Cons -> Option.some(head to tail)
+    }
+
     override fun iterator(): Iterator<A> = ListIterator(this)
 
     override fun toString(): String = buildString {
@@ -57,6 +62,10 @@ sealed class List<out A> : Iterable<A> {
         }
     }
 }
+
+fun <A> List<A>.toStream(): Stream<A> = unCons().map { (head, tail) ->
+    Stream.cons(head) { tail.toStream() }
+}.getOrElse { Stream() }
 
 typealias Assoc<A, B> = List<Pair<A, B>>
 

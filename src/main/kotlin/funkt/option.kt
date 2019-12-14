@@ -27,8 +27,6 @@ sealed class Option<out A> {
 
     fun orElse(default: () -> Option<@UnsafeVariance A>): Option<A> = map { _ -> this }.getOrElse(default)
 
-    fun toStream(): Stream<A> = map { Stream(it) }.getOrElse { Stream() }
-
     internal object None : Option<Nothing>() {
 
         override fun isEmpty(): Boolean = true
@@ -55,3 +53,5 @@ sealed class Option<out A> {
         fun <A> some(a: A): Option<A> = Some(a)
     }
 }
+
+fun <A> Option<A>.toStream(): Stream<A> = map { Stream(it) }.getOrElse { Stream() }
