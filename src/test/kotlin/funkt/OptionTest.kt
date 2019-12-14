@@ -1,5 +1,6 @@
 package funkt
 
+import funkt.Option.Companion.some
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -10,12 +11,21 @@ internal class OptionTest {
         assertTrue(Option<Any>().isEmpty())
         assertTrue(Option(null).isEmpty())
         assertFalse(Option(5).isEmpty())
+        assertEquals(Option(5), some(5))
     }
 
     @Test
     internal fun getValueFromOption() {
         assertEquals(5, Option(5).getOrElse(1))
         assertEquals(1, Option<Int>().getOrElse(1))
+    }
+
+    @Test
+    internal fun testOrElse() {
+        assertEquals(Option<Any>(), Option<Any>().orElse { Option() })
+        assertEquals(Option(5), Option(5).orElse { Option(1) })
+        assertEquals(Option(5), Option(5).orElse { Option() })
+        assertEquals(Option(5), Option<Int>().orElse { Option(5) })
     }
 
     @Test
@@ -43,5 +53,11 @@ internal class OptionTest {
         assertEquals(0, callCount)
         Option(3).forEach { callCount += 1 }
         assertEquals(1, callCount)
+    }
+
+    @Test
+    internal fun optionToStream() {
+        assertEquals(Stream<Nothing>(), Option<Nothing>().toStream())
+        assertEquals(listOf(5), Option(5).toStream().asIterable().toList())
     }
 }

@@ -24,13 +24,48 @@ internal class ListTest {
     }
 
     @Test
-    internal fun createAssocList() {
-        assertTrue(emptyAssoc<String, Int>().isEmpty())
-    }
-
-    @Test
     internal fun assocValues() {
         assertEquals(Option<Int>(), List("a" to 1).lookup("b"))
         assertEquals(Option(2), List("a" to 1).assoc("b", 2).lookup("b"))
+    }
+
+    @Test
+    internal fun testIterateList() {
+        assertEquals(listOf<Any>(), List<Any>().toList())
+        assertEquals(listOf(1, 2, 3), List(1, 2, 3).toList())
+    }
+
+    @Test
+    internal fun testToString() {
+        assertEquals("[]", List<Int>().toString())
+        assertEquals("[1]", List(1).toString())
+        assertEquals("[1, 2]", List(1, 2).toString())
+    }
+
+    @Test
+    internal fun listToStream() {
+        assertEquals(
+            listOf(1, 2, 3), List(1, 2, 3).toStream()
+                .asIterable().toList()
+        )
+    }
+
+    @Test
+    internal fun testLength() {
+        assertEquals(0, List<Nothing>().length)
+        assertEquals(3, List(1, 2, 3).length)
+    }
+
+    @Test
+    internal fun testFoldLeft() {
+        assertEquals(0, List<Int>().foldLeft(0) { s, a -> s + a })
+        assertEquals(6, List(1, 2, 3).foldLeft(0) { s, a -> s + a })
+        assertEquals(List(3, 2, 1),
+            List(1, 2, 3).foldLeft(List<Int>()) { l, a -> l.cons(a) })
+    }
+
+    @Test
+    internal fun testReverse() {
+        assertEquals(List(3, 2, 1), List(1, 2, 3).reverse())
     }
 }

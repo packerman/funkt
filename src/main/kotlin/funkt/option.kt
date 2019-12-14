@@ -25,14 +25,20 @@ sealed class Option<out A> {
         if (this is Some) action(value)
     }
 
+    fun orElse(default: () -> Option<@UnsafeVariance A>): Option<A> = map { _ -> this }.getOrElse(default)
+
     internal object None : Option<Nothing>() {
 
         override fun isEmpty(): Boolean = true
+
+        override fun toString(): String = "None"
     }
 
     internal data class Some<A>(val value: A) : Option<A>() {
 
         override fun isEmpty(): Boolean = false
+
+        override fun toString(): String = "Some($value)"
     }
 
     companion object {
@@ -43,5 +49,9 @@ sealed class Option<out A> {
         }
 
         operator fun <A> invoke(): Option<A> = None
+
+        fun <A> some(a: A): Option<A> = Some(a)
     }
 }
+
+fun <A> Option<A>.toStream(): Stream<A> = map { Stream(it) }.getOrElse { Stream() }

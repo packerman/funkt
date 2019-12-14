@@ -140,9 +140,29 @@ internal class StreamTest {
                 .asIterable().toList()
         )
 
-        assertEquals(listOf(1, 2, 1, 2, 1, 2, 1, 2, 1, 2),
+        assertEquals(
+            listOf(1, 2, 1, 2, 1, 2, 1, 2, 1, 2),
             interleave(repeat(1), repeat(2))
                 .take(100000).drop(99990)
-                .asIterable().toList())
+                .asIterable().toList()
+        )
+    }
+
+    @Test
+    internal fun sieveOfEratosthenes() {
+        fun sieve(s: Stream<Int>): Stream<Int> = s.unCons().map { (h, t) ->
+            cons(h, t.map { sieve(it.filter { n -> n % h != 0 }) })
+        }.getOrElse(Stream())
+        assertEquals(
+            listOf(2, 3, 5, 7, 11, 13, 17, 19, 23, 29),
+            sieve(iterate(2) { it + 1 }).take(10)
+                .asIterable().toList()
+        )
+    }
+
+    @Test
+    internal fun testHead() {
+        assertEquals(Option<Int>(), Stream<Int>().head())
+        assertEquals(Option(1), Stream(1, 2, 3).head())
     }
 }

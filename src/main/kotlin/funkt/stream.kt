@@ -4,9 +4,14 @@ sealed class Stream<out A> {
 
     abstract fun isEmpty(): Boolean
 
+    fun head(): Option<A> = when (this) {
+        is Empty -> Option()
+        is Cons -> Option.some(head)
+    }
+
     fun unCons(): Option<Pair<A, Lazy<Stream<A>>>> = when (this) {
         is Empty -> Option()
-        is Cons -> Option(head to tail)
+        is Cons -> Option.some(head to tail)
     }
 
     fun take(n: Int): Stream<A> =
@@ -24,6 +29,12 @@ sealed class Stream<out A> {
     fun <B> map(f: (A) -> B): Stream<B> =
         unCons().map { (h, t) ->
             cons(f(h), t.map { it.map(f) })
+        }.getOrElse(Empty)
+
+    fun filter(p: (A) -> Boolean): Stream<A> =
+        unCons().map { (h, t) ->
+            if (p(h)) cons(h, t.map { it.filter(p) })
+            else t().filter(p)
         }.getOrElse(Empty)
 
     fun <B> flatMap(f: (A) -> Stream<B>): Stream<B> =
@@ -52,6 +63,10 @@ sealed class Stream<out A> {
     }
 
     companion object {
+
+        operator fun <A> invoke(): Stream<A> = Empty
+
+        operator fun <A> invoke(a: A): Stream<A> = Cons(a, Lazy { Empty })
 
         operator fun <A> invoke(vararg elements: A): Stream<A> = elements.toStream(0, elements.size)
 
@@ -87,8 +102,9 @@ sealed class Stream<out A> {
             override fun next(): A = stream.let { s ->
                 when (s) {
                     is Empty -> error("Empty stream")
-                    is Cons -> s.head.also {
+                    is Cons -> {
                         stream = s.tail()
+                        s.head
                     }
                 }
             }
