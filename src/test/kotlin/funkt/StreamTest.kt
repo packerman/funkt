@@ -159,4 +159,10 @@ internal class StreamTest {
                 .asIterable().toList()
         )
     }
+
+    @Test
+    internal fun testHead() {
+        assertEquals(Option<Int>(), Stream<Int>().head())
+        assertEquals(Option(1), Stream(1, 2, 3).head())
+    }
 }

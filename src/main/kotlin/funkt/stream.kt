@@ -4,9 +4,14 @@ sealed class Stream<out A> {
 
     abstract fun isEmpty(): Boolean
 
+    fun head(): Option<A> = when (this) {
+        is Empty -> Option()
+        is Cons -> Option.some(head)
+    }
+
     fun unCons(): Option<Pair<A, Lazy<Stream<A>>>> = when (this) {
         is Empty -> Option()
-        is Cons -> Option(head to tail)
+        is Cons -> Option.some(head to tail)
     }
 
     fun take(n: Int): Stream<A> =
