@@ -55,4 +55,17 @@ internal class ListTest {
         assertEquals(0, List<Nothing>().length)
         assertEquals(3, List(1, 2, 3).length)
     }
+
+    @Test
+    internal fun testFoldLeft() {
+        assertEquals(0, List<Int>().foldLeft(0) { s, a -> s + a })
+        assertEquals(6, List(1, 2, 3).foldLeft(0) { s, a -> s + a })
+        assertEquals(List(3, 2, 1),
+            List(1, 2, 3).foldLeft(List<Int>()) { l, a -> l.cons(a) })
+    }
+
+    @Test
+    internal fun testReverse() {
+        assertEquals(List(3, 2, 1), List(1, 2, 3).reverse())
+    }
 }

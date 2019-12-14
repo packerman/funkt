@@ -18,6 +18,14 @@ sealed class List<out A> : Iterable<A> {
         is Cons -> Option.some(head to tail)
     }
 
+    fun <B> foldLeft(identity: B, f: (B, A) -> B): B {
+        tailrec fun iter(list: List<A>, acc: B): B = when (list) {
+            is Nil -> acc
+            is Cons -> iter(list.tail, f(acc, list.head))
+        }
+        return iter(this, identity)
+    }
+
     override fun iterator(): Iterator<A> = ListIterator(this)
 
     override fun toString(): String = buildString {
@@ -72,6 +80,8 @@ sealed class List<out A> : Iterable<A> {
 fun <A> List<A>.toStream(): Stream<A> = unCons().map { (head, tail) ->
     Stream.cons(head) { tail.toStream() }
 }.getOrElse { Stream() }
+
+fun <A> List<A>.reverse(): List<A> = foldLeft(List()) { r, a -> r.cons(a) }
 
 typealias Assoc<A, B> = List<Pair<A, B>>
 
