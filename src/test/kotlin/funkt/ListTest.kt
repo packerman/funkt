@@ -49,4 +49,10 @@ internal class ListTest {
                 .asIterable().toList()
         )
     }
+
+    @Test
+    internal fun testLength() {
+        assertEquals(0, List<Nothing>().length)
+        assertEquals(3, List(1, 2, 3).length)
+    }
 }

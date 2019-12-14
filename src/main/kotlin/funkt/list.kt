@@ -4,6 +4,8 @@ sealed class List<out A> : Iterable<A> {
 
     abstract fun isEmpty(): Boolean
 
+    abstract val length: Int
+
     fun find(p: (A) -> Boolean): Option<A> = when (this) {
         is Nil -> Option()
         is Cons -> if (p(head)) Option(head) else tail.find(p)
@@ -32,11 +34,15 @@ sealed class List<out A> : Iterable<A> {
     internal object Nil : List<Nothing>() {
 
         override fun isEmpty(): Boolean = true
+
+        override val length: Int = 0
     }
 
     internal data class Cons<A>(val head: A, val tail: List<A>) : List<A>() {
 
         override fun isEmpty(): Boolean = false
+
+        override val length: Int = 1 + tail.length
 
         override fun toString(): String = super.toString()
     }
