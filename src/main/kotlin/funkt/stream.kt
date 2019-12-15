@@ -92,6 +92,19 @@ sealed class Stream<out A> {
                 cons(head1, tail1.map { interleave(stream2, it) })
             }.getOrElse(stream2)
 
+        fun <A, B> lift(f: (A) -> B): (Stream<A>) -> Stream<B> = {
+            it.map(f)
+        }
+
+        fun <A, B, C> lift2(f: (A, B) -> C): (Stream<A>, Stream<B>) -> Stream<C> = { stream1, stream2 ->
+            stream1.flatMap { a -> stream2.map { b -> f(a, b) } }
+        }
+
+        fun <A, B, C, D> lift3(f: (A, B, C) -> D): (Stream<A>, Stream<B>, Stream<C>) -> Stream<D> =
+            { stream1, stream2, stream3 ->
+                stream1.flatMap { a -> stream2.flatMap { b -> stream3.map { c -> f(a, b, c) } } }
+            }
+
         private fun <A> concatLazy(stream1: Stream<A>, stream2: Lazy<Stream<A>>): Stream<A> =
             stream1.unCons().map { (h, t) -> cons(h, t.map { concatLazy(it, stream2) }) }.getOrElse(stream2)
 

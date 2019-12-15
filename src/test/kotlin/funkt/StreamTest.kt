@@ -5,6 +5,7 @@ import funkt.Stream.Companion.cons
 import funkt.Stream.Companion.drop
 import funkt.Stream.Companion.interleave
 import funkt.Stream.Companion.iterate
+import funkt.Stream.Companion.lift3
 import funkt.Stream.Companion.repeat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -164,5 +165,54 @@ internal class StreamTest {
     internal fun testHead() {
         assertEquals(Option<Int>(), Stream<Int>().head())
         assertEquals(Option(1), Stream(1, 2, 3).head())
+    }
+
+    @Test
+    internal fun testLift() {
+        val f = Stream.lift<Int, Int> { it * it }
+        assertEquals(
+            listOf(1, 4, 9), f(Stream(1, 2, 3))
+                .asIterable().toList()
+        )
+    }
+
+    @Test
+    internal fun testLift2() {
+        val f = Stream.lift2<Int, Int, Int> { a, b -> a * b }
+        assertEquals(
+            listOf(4, 5, 6, 8, 10, 12, 12, 15, 18),
+            f(Stream(1, 2, 3), Stream(4, 5, 6))
+                .asIterable().toList()
+        )
+    }
+
+    @Test
+    internal fun testLift3() {
+        tailrec fun gcd(a: Int, b: Int): Int {
+            val r = a % b
+            return if (r == 0) b else gcd(b, r)
+        }
+
+        val s1 = Stream(1, 2, 3, 4, 5)
+        val s2 = Stream(1, 2, 3, 4, 5)
+        val s3 = Stream(1, 2, 3, 4, 5)
+        val tripleStream = lift3<Int, Int, Int, Triple<Int, Int, Int>>(::Triple)
+        assertEquals(
+            listOf(
+                Triple(1, 1, 1),
+                Triple(1, 1, 2),
+                Triple(1, 1, 3),
+                Triple(1, 1, 4),
+                Triple(1, 1, 5),
+                Triple(1, 2, 1),
+                Triple(1, 2, 2),
+                Triple(1, 2, 3),
+                Triple(1, 2, 4),
+                Triple(1, 2, 5),
+                Triple(1, 3, 1),
+                Triple(1, 3, 2)
+            ),
+            tripleStream(s1, s2, s3).take(12).asIterable().toList()
+        )
     }
 }
