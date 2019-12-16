@@ -215,4 +215,26 @@ internal class StreamTest {
             tripleStream(s1, s2, s3).take(12).asIterable().toList()
         )
     }
+
+    @Test
+    internal fun testPythagoreanTriples() {
+        tailrec fun gcd(a: Int, b: Int): Int {
+            val r = a % b
+            return if (r == 0) b else gcd(b, r)
+        }
+
+        val s = iterate(2) { it + 1 }.take(100)
+        val f = lift3<Int, Int, Int, Triple<Int, Int, Int>>(::Triple)
+
+        assertEquals(listOf(
+            Triple(3, 4, 5), Triple(5, 12, 13),
+            Triple(7, 24, 25), Triple(8, 15, 17),
+            Triple(9, 40, 41), Triple(11, 60, 61),
+            Triple(12, 35, 37), Triple(13, 84, 85),
+            Triple(16, 63, 65), Triple(20, 21, 29)
+        ),
+            f(s, s, s).filter { (a, b, c) -> b in (a + 1) until c && gcd(a, b) == 1 && a * a + b * b == c * c }
+                .take(10)
+                .asIterable().toList())
+    }
 }
