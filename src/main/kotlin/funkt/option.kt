@@ -51,6 +51,8 @@ sealed class Option<out A> {
         operator fun <A> invoke(): Option<A> = None
 
         fun <A> some(a: A): Option<A> = Some(a)
+
+        fun <A> cond(first: Option<A>, vararg rest: () -> Option<A>): Option<A> = rest.fold(first, Option<A>::orElse)
     }
 }
 
