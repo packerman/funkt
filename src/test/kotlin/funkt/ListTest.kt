@@ -68,4 +68,27 @@ internal class ListTest {
     internal fun testReverse() {
         assertEquals(List(3, 2, 1), List(1, 2, 3).reverse())
     }
+
+    @Test
+    internal fun mapElements() {
+        assertEquals(listOf(1, 4, 9, 16, 25),
+            List(1, 2, 3, 4, 5).map { it * it }.toList()
+        )
+    }
+
+    @Test
+    internal fun filterElements() {
+        assertEquals(
+            listOf(4, 3, 4, 3),
+            List(4, -6, 3, 4, 0, -3, -2, 3).filter { it > 0 }.toList()
+        )
+    }
+
+    @Test
+    internal fun removeElementsNotSatisfyingPredicate() {
+        assertEquals(
+            listOf(4, 3, 4, 0, 3),
+            List(4, -6, 3, 4, 0, -3, -2, 3).remove { it < 0 }.toList()
+        )
+    }
 }

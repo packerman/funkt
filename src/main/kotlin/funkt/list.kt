@@ -1,5 +1,8 @@
 package funkt
 
+import funkt.List.Cons
+import funkt.List.Nil
+
 sealed class List<out A> : Iterable<A> {
 
     abstract fun isEmpty(): Boolean
@@ -28,6 +31,33 @@ sealed class List<out A> : Iterable<A> {
 
     override fun iterator(): Iterator<A> = ListIterator(this)
 
+    fun <B> map(f: (A) -> B): List<B> = buildList { a, builder ->
+        builder.add(f(a))
+    }
+
+    fun filter(predicate: (A) -> Boolean): List<A> = buildList { a, builder ->
+        if (predicate(a)) {
+            builder.add(a)
+        }
+    }
+
+    fun remove(predicate: (A) -> Boolean): List<A> = buildList { a, builder ->
+        if (!predicate(a)) {
+            builder.add(a)
+        }
+    }
+
+    private fun <B> buildList(action: (A, ListBuilder<B>) -> Unit): List<B> {
+        tailrec fun go(list: List<A>, builder: ListBuilder<B>): List<B> = when (list) {
+            is Nil -> builder.build()
+            is Cons -> {
+                action(list.head, builder)
+                go(list.tail, builder)
+            }
+        }
+        return go(this, ListBuilder())
+    }
+
     override fun toString(): String = buildString {
         append('[')
         forEachIndexed { i: Int, a: A ->
@@ -46,7 +76,7 @@ sealed class List<out A> : Iterable<A> {
         override val length: Int = 0
     }
 
-    internal data class Cons<A>(val head: A, val tail: List<A>) : List<A>() {
+    internal data class Cons<A>(internal val head: A, internal var tail: List<A>) : List<A>() {
 
         override fun isEmpty(): Boolean = false
 
@@ -88,3 +118,26 @@ typealias Assoc<A, B> = List<Pair<A, B>>
 fun <A, B> Assoc<A, B>.assoc(a: A, b: B): Assoc<A, B> = cons(a to b)
 
 fun <A, B> Assoc<A, B>.lookup(a: A): Option<B> = find { it.first == a }.map { it.second }
+
+internal class ListBuilder<A> {
+
+    private var first: Cons<A>? = null
+    private var last: Cons<A>? = null
+
+    fun add(a: A): ListBuilder<A> {
+        val new = Cons(a, Nil)
+        val l = last
+        if (l != null) {
+            l.tail = new
+        } else {
+            first = new
+        }
+        last = new
+        return this
+    }
+
+    fun build(): List<A> = first?.let { it } ?: Nil
+}
+
+internal fun <A> buildList(block: ListBuilder<A>.() -> Unit): List<A> =
+    ListBuilder<A>().apply(block).build()
