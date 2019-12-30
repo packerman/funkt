@@ -31,31 +31,20 @@ sealed class List<out A> : Iterable<A> {
 
     override fun iterator(): Iterator<A> = ListIterator(this)
 
-    fun <B> map(f: (A) -> B): List<B> = buildList { a, builder ->
+    fun <B> map(f: (A) -> B): List<B> = buildList(this, ListBuilder()) { a, builder ->
         builder.add(f(a))
     }
 
-    fun filter(predicate: (A) -> Boolean): List<A> = buildList { a, builder ->
+    fun filter(predicate: (A) -> Boolean): List<A> = buildList(this, ListBuilder()) { a, builder ->
         if (predicate(a)) {
             builder.add(a)
         }
     }
 
-    fun remove(predicate: (A) -> Boolean): List<A> = buildList { a, builder ->
+    fun remove(predicate: (A) -> Boolean): List<A> = buildList(this, ListBuilder()) { a, builder ->
         if (!predicate(a)) {
             builder.add(a)
         }
-    }
-
-    private fun <B> buildList(action: (A, ListBuilder<B>) -> Unit): List<B> {
-        tailrec fun go(list: List<A>, builder: ListBuilder<B>): List<B> = when (list) {
-            is Nil -> builder.build()
-            is Cons -> {
-                action(list.head, builder)
-                go(list.tail, builder)
-            }
-        }
-        return go(this, ListBuilder())
     }
 
     override fun toString(): String = buildString {
@@ -102,6 +91,18 @@ sealed class List<out A> : Iterable<A> {
                         l.head
                     }
                 }
+            }
+        }
+
+        private tailrec fun <A, B> buildList(
+            list: List<A>,
+            builder: ListBuilder<B>,
+            action: (A, ListBuilder<B>) -> Unit
+        ): List<B> = when (list) {
+            is Nil -> builder.build()
+            is Cons -> {
+                action(list.head, builder)
+                buildList(list.tail, builder, action)
             }
         }
     }
