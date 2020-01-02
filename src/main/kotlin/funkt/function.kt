@@ -21,3 +21,9 @@ sealed class Trampoline<A> {
 }
 
 fun <A, B, C> curry(f: (A, B) -> C): (A) -> (B) -> C = { a -> { b -> f(a, b) } }
+
+fun <A, B, C> flip(f: (A) -> (B) -> C): (B) -> (A) -> C = { b -> { a -> f(a)(b) } }
+
+fun <A, B, C> flip(f: (A, B) -> C): (B, A) -> C = { b, a -> f(a, b) }
+
+fun <A, B, C> partial(f: (A, B) -> C, a: A): (B) -> C = { b -> f(a, b) }

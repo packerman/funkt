@@ -33,4 +33,22 @@ internal class FunctionTest {
         val f = curry<Int, Int, Int> { a, b -> a + b }
         assertEquals(8, f(5)(3))
     }
+
+    @Test
+    internal fun flipFunctions() {
+        val f = { a: Int, b: Int -> a - b }
+        val curried = curry(f)
+
+        assertEquals(2, f(5, 3))
+        assertEquals(-2, flip(f)(5, 3))
+        assertEquals(2, curried(5)(3))
+        assertEquals(-2, flip(curried)(5)(3))
+    }
+
+    @Test
+    internal fun partialApplyFunctions() {
+        val f = { a: Int, b: Int -> a + b }
+        val p = partial(f, 2)
+        assertEquals(5, p(3))
+    }
 }
