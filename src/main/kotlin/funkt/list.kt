@@ -31,17 +31,17 @@ sealed class List<out A> : Iterable<A> {
 
     override fun iterator(): Iterator<A> = ListIterator(this)
 
-    fun <B> map(f: (A) -> B): List<B> = buildList(this, ListBuilder()) { a, builder ->
+    fun <B> map(f: (A) -> B): List<B> = buildList(this) { a, builder ->
         builder.add(f(a))
     }
 
-    fun filter(predicate: (A) -> Boolean): List<A> = buildList(this, ListBuilder()) { a, builder ->
+    fun filter(predicate: (A) -> Boolean): List<A> = buildList(this) { a, builder ->
         if (predicate(a)) {
             builder.add(a)
         }
     }
 
-    fun remove(predicate: (A) -> Boolean): List<A> = buildList(this, ListBuilder()) { a, builder ->
+    fun remove(predicate: (A) -> Boolean): List<A> = buildList(this) { a, builder ->
         if (!predicate(a)) {
             builder.add(a)
         }
@@ -96,7 +96,7 @@ sealed class List<out A> : Iterable<A> {
 
         private tailrec fun <A, B> buildList(
             list: List<A>,
-            builder: ListBuilder<B>,
+            builder: ListBuilder<B> = ListBuilder(),
             action: (A, ListBuilder<B>) -> Unit
         ): List<B> = when (list) {
             is Nil -> builder.build()
