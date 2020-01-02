@@ -47,6 +47,8 @@ sealed class List<out A> : Iterable<A> {
         }
     }
 
+    fun concat(other: List<@UnsafeVariance A>): List<A> = concat(this, other)
+
     override fun toString(): String = buildString {
         append('[')
         forEachIndexed { i: Int, a: A ->
@@ -78,6 +80,8 @@ sealed class List<out A> : Iterable<A> {
 
         operator fun <A> invoke(vararg elements: A): List<A> =
             elements.foldRight(Nil) { e: A, l: List<A> -> Cons(e, l) }
+
+        fun <A> concat(list1: List<A>, list2: List<A>): List<A> = ListBuilder(list1).addAndBuild(list2)
 
         private class ListIterator<A>(private var list: List<A>) : Iterator<A> {
 
@@ -122,22 +126,43 @@ fun <A, B> Assoc<A, B>.lookup(a: A): Option<B> = find { it.first == a }.map { it
 
 internal class ListBuilder<A> {
 
-    private var first: Cons<A>? = null
+    private var first: List<A>? = null
     private var last: Cons<A>? = null
 
     fun add(a: A): ListBuilder<A> {
         val new = Cons(a, Nil)
-        val l = last
-        if (l != null) {
-            l.tail = new
-        } else {
-            first = new
-        }
+        updateRefs(new)
         last = new
         return this
     }
 
+    fun addAll(es: Iterable<A>): ListBuilder<A> {
+        for (e in es) {
+            add(e)
+        }
+        return this
+    }
+
     fun build(): List<A> = first?.let { it } ?: Nil
+
+    fun addAndBuild(list: List<A>): List<A> {
+        updateRefs(list)
+        return build()
+    }
+
+    private fun updateRefs(list: List<A>) {
+        val l = last
+        if (l != null) {
+            l.tail = list
+        } else {
+            first = list
+        }
+    }
+
+    companion object {
+
+        operator fun <A> invoke(es: Iterable<A>): ListBuilder<A> = ListBuilder<A>().addAll(es)
+    }
 }
 
 internal fun <A> buildList(block: ListBuilder<A>.() -> Unit): List<A> =
