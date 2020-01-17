@@ -1,13 +1,20 @@
 package funkt
 
-import funkt.List.Cons
-import funkt.List.Nil
-
 sealed class List<out A> : Iterable<A> {
 
     abstract fun isEmpty(): Boolean
 
     abstract val length: Int
+
+    fun tail(): List<A> = when (this) {
+        is Nil -> error("Empty list")
+        is Cons -> tail
+    }
+
+    fun setHead(head: @UnsafeVariance A): List<A> = when (this) {
+        is Nil -> error("Empty list")
+        is Cons -> Cons(head, tail)
+    }
 
     fun find(p: (A) -> Boolean): Option<A> = when (this) {
         is Nil -> Option()
@@ -31,22 +38,6 @@ sealed class List<out A> : Iterable<A> {
 
     override fun iterator(): Iterator<A> = ListIterator(this)
 
-    fun <B> map(f: (A) -> B): List<B> = buildList(this) { a, builder ->
-        builder.add(f(a))
-    }
-
-    fun filter(predicate: (A) -> Boolean): List<A> = buildList(this) { a, builder ->
-        if (predicate(a)) {
-            builder.add(a)
-        }
-    }
-
-    fun remove(predicate: (A) -> Boolean): List<A> = buildList(this) { a, builder ->
-        if (!predicate(a)) {
-            builder.add(a)
-        }
-    }
-
     fun concat(other: List<@UnsafeVariance A>): List<A> = concat(this, other)
 
     override fun toString(): String = buildString {
@@ -67,7 +58,7 @@ sealed class List<out A> : Iterable<A> {
         override val length: Int = 0
     }
 
-    internal data class Cons<A>(internal val head: A, internal var tail: List<A>) : List<A>() {
+    internal data class Cons<A>(internal val head: A, internal val tail: List<A>) : List<A>() {
 
         override fun isEmpty(): Boolean = false
 
@@ -81,7 +72,7 @@ sealed class List<out A> : Iterable<A> {
         operator fun <A> invoke(vararg elements: A): List<A> =
             elements.foldRight(Nil) { e: A, l: List<A> -> Cons(e, l) }
 
-        fun <A> concat(list1: List<A>, list2: List<A>): List<A> = ListBuilder(list1).addAndBuild(list2)
+        fun <A> concat(list1: List<A>, list2: List<A>): List<A> = list1.foldRight(list2) { a, l -> l.cons(a) }
 
         private class ListIterator<A>(private var list: List<A>) : Iterator<A> {
 
@@ -97,18 +88,6 @@ sealed class List<out A> : Iterable<A> {
                 }
             }
         }
-
-        private tailrec fun <A, B> buildList(
-            list: List<A>,
-            builder: ListBuilder<B> = ListBuilder(),
-            action: (A, ListBuilder<B>) -> Unit
-        ): List<B> = when (list) {
-            is Nil -> builder.build()
-            is Cons -> {
-                action(list.head, builder)
-                buildList(list.tail, builder, action)
-            }
-        }
     }
 }
 
@@ -118,52 +97,18 @@ fun <A> List<A>.toStream(): Stream<A> = unCons().map { (head, tail) ->
 
 fun <A> List<A>.reverse(): List<A> = foldLeft(List()) { r, a -> r.cons(a) }
 
+fun <A, B> List<A>.foldRight(identity: B, f: (A, B) -> B): B = reverse().foldLeft(identity) { b, a -> f(a, b) }
+
+fun <A, B> List<A>.map(f: (A) -> B): List<B> = foldRight(List()) { a, l -> l.cons(f(a)) }
+
+fun <A> List<A>.filter(predicate: (A) -> Boolean): List<A> =
+    foldRight(List()) { a, l -> if (predicate(a)) l.cons(a) else l }
+
+fun <A> List<A>.remove(predicate: (A) -> Boolean): List<A> =
+    foldRight(List()) { a, l -> if (!predicate(a)) l.cons(a) else l }
+
 typealias Assoc<A, B> = List<Pair<A, B>>
 
 fun <A, B> Assoc<A, B>.assoc(a: A, b: B): Assoc<A, B> = cons(a to b)
 
 fun <A, B> Assoc<A, B>.lookup(a: A): Option<B> = find { it.first == a }.map { it.second }
-
-internal class ListBuilder<A> {
-
-    private var first: List<A>? = null
-    private var last: Cons<A>? = null
-
-    fun add(a: A): ListBuilder<A> {
-        val new = Cons(a, Nil)
-        updateRefs(new)
-        last = new
-        return this
-    }
-
-    fun addAll(es: Iterable<A>): ListBuilder<A> {
-        for (e in es) {
-            add(e)
-        }
-        return this
-    }
-
-    fun build(): List<A> = first?.let { it } ?: Nil
-
-    fun addAndBuild(list: List<A>): List<A> {
-        updateRefs(list)
-        return build()
-    }
-
-    private fun updateRefs(list: List<A>) {
-        val l = last
-        if (l != null) {
-            l.tail = list
-        } else {
-            first = list
-        }
-    }
-
-    companion object {
-
-        operator fun <A> invoke(es: Iterable<A>): ListBuilder<A> = ListBuilder<A>().addAll(es)
-    }
-}
-
-internal fun <A> buildList(block: ListBuilder<A>.() -> Unit): List<A> =
-    ListBuilder<A>().apply(block).build()
