@@ -12,6 +12,18 @@ internal class ListTest {
     }
 
     @Test
+    internal fun tailFunction() {
+        assertThrows(IllegalStateException::class.java) { List<Int>().tail() }
+        assertEquals(List(2, 4), List(1, 2, 4).tail())
+    }
+
+    @Test
+    internal fun setHeadFunction() {
+        assertThrows(IllegalStateException::class.java) { List<Int>().setHead(5) }
+        assertEquals(List(5, 2, 4), List(1, 2, 4).setHead(5))
+    }
+
+    @Test
     internal fun canAddElements() {
         assertFalse(List<Int>().cons(1).isEmpty())
     }
@@ -62,6 +74,12 @@ internal class ListTest {
         assertEquals(6, List(1, 2, 3).foldLeft(0) { s, a -> s + a })
         assertEquals(List(3, 2, 1),
             List(1, 2, 3).foldLeft(List<Int>()) { l, a -> l.cons(a) })
+    }
+
+    @Test
+    internal fun testFoldRight() {
+        assertEquals(-8, List(5, 3).foldLeft(0) { a, b -> a - b })
+        assertEquals(2, List(5, 3).foldRight(0) { a, b -> a - b })
     }
 
     @Test
